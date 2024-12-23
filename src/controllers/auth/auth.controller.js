@@ -59,7 +59,7 @@ export const loginCustomer = async (req, res) => {
       customer,
     });
   } catch (error) {
-    console.error(error); // Log the error for debugging
+    // console.error(error); // Log the error for debugging
     return res.status(500).send({ message: 'Internal server error' });
   }
 };
