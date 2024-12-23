@@ -7,7 +7,7 @@ const branchSchema = new mongoose.Schema({
   },
   liveLocation: {
     latitude: { type: Number },
-    longitutude: { type: Number },
+    longitude: { type: Number },
   },
   address: {
     type: String,

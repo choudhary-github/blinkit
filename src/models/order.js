@@ -36,7 +36,7 @@ const orderSchema = new mongoose.Schema({
     },
   ],
   deliveryLocation: {
-    lattitude: {
+    latitude: {
       type: Number,
       required: true,
     },
@@ -49,7 +49,7 @@ const orderSchema = new mongoose.Schema({
     },
   },
   pickupLocation: {
-    lattitude: {
+    latitude: {
       type: Number,
       required: true,
     },
@@ -62,7 +62,7 @@ const orderSchema = new mongoose.Schema({
     },
   },
   deliveryPartnerLocation: {
-    lattitude: {
+    latitude: {
       type: Number,
     },
     longitude: {
