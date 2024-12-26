@@ -93,7 +93,88 @@ export const confirmOrder = async (req, res) => {
 
 export const updateOrderStatus = async (req, res) => {
   try {
+    const { orderId } = req.params;
+    const { userId } = req.user;
+
+    const { deliveryPersonLocation, status } = req.body;
+    const deliveryPerson = await DeliveryPartner.findById(userId);
+
+    if (!deliveryPerson) {
+      return res.status(404).send({ message: 'Delivery person not found' });
+    }
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).send({ message: 'Order not found' });
+    }
+
+    if (['canelled,', 'delivered'].includes(order.status)) {
+      return res.status(400).send({ message: 'Order cannot be updated ' });
+    }
+
+    if (order.deliveryPartner.toString() !== userId) {
+      return res
+        .status(403)
+        .send({ message: 'You are not authorized to update this order' });
+    }
+
+    order.status = status;
+
+    order.deliveryPartner = userId;
+    order.deliveryLocation = deliveryPersonLocation;
+
+    const savedOrder = await order.save();
+    return res.status(200).send({ message: 'Order updated', savedOrder });
   } catch (error) {
     res.status(500).send({ message: 'Failed to update order status', error });
+  }
+};
+
+export const getOrders = async (req, res) => {
+  try {
+    const { status, branchId, customerId, deliveryPartnerId } = req.query;
+
+    let query = {};
+    if (status) {
+      query.status = status;
+    }
+
+    if (deliveryPartnerId) {
+      query.deliveryPartner = deliveryPartnerId;
+    }
+
+    if (branchId) {
+      query.branch = branchId;
+    }
+
+    if (customerId) {
+      query.customer = customerId;
+    }
+
+    const orders = await Order.find(query).populate(
+      'customer branch deliveryPartner items.item'
+    );
+    res.status(200).send({ message: 'Orders fetched successfully', orders });
+  } catch (error) {
+    return res.status(500).send({ message: 'Internal Server Error', error });
+  }
+};
+
+export const getOrderById = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).send({ message: 'Order not found' });
+    }
+
+    return res
+      .status(200)
+      .send({ message: 'Orders fetched successfully', order });
+  } catch (error) {
+    return res.status(500).send({ message: 'Internal Server Error', error });
   }
 };
