@@ -77,13 +77,14 @@ export const confirmOrder = async (req, res) => {
     order.status = 'confirmed';
 
     order.deliveryPartner = userId;
-    order.deliveryLocation = {
+    order.deliveryPartnerLocation = {
       latitude: deliveryPersonLocation.latitude,
       longitude: deliveryPersonLocation.longitude,
       address: deliveryPersonLocation.address || 'No Address Available',
     };
 
     const savedOrder = await order.save();
+    req.server.io.to(orderId).emit('orderConfirmed', order);
 
     return res.status(200).send({ message: 'Order confirmed', savedOrder });
   } catch (error) {
@@ -120,11 +121,11 @@ export const updateOrderStatus = async (req, res) => {
     }
 
     order.status = status;
-
     order.deliveryPartner = userId;
     order.deliveryLocation = deliveryPersonLocation;
 
     const savedOrder = await order.save();
+    req.server.io.to(orderId).emit('liveTrackingUpdates', order);
     return res.status(200).send({ message: 'Order updated', savedOrder });
   } catch (error) {
     res.status(500).send({ message: 'Failed to update order status', error });
@@ -138,6 +139,8 @@ export const getOrders = async (req, res) => {
     let query = {};
     if (status) {
       query.status = status;
+      console.log(query);
+      
     }
 
     if (deliveryPartnerId) {
@@ -155,7 +158,9 @@ export const getOrders = async (req, res) => {
     const orders = await Order.find(query).populate(
       'customer branch deliveryPartner items.item'
     );
-    res.status(200).send({ message: 'Orders fetched successfully', orders });
+    return res
+      .status(200)
+      .send({ message: 'Orders fetched successfully', orders });
   } catch (error) {
     return res.status(500).send({ message: 'Internal Server Error', error });
   }
