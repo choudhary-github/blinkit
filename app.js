@@ -23,7 +23,7 @@ const start = async () => {
 
   await buildAdminRouter(app);
 
-  app.listen({ port: PORT }, (err, addr) => {
+  app.listen({ port: PORT, host: '0.0.0.0' }, (err, addr) => {
     if (err) {
       console.log(err);
     } else {
